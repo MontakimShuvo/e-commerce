@@ -44,5 +44,5 @@ def user_login(request):
 @login_required
 def user_logout(request):
     logout(request)
-    # messages.success(request, 'You have Successfully logged out.')
+    messages.success(request, 'You have Successfully logged out.')
     return redirect('login')
