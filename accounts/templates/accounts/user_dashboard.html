@@ -105,7 +105,7 @@
                                         Privacy</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <a class="nav-link" href="" role="tab">
+                                    <a class="nav-link" href="{% url 'logout' %}" role="tab">
                                         <i data-feather="log-out"></i> Logout
                                     </a>
                                 </li>
@@ -193,7 +193,7 @@
                                                 <div class="dashboard-detail">
                                                     <h6 class="text-content">{{user_info.username}}</h6>
                                                     <h6 class="text-content">{{user_info.email}}</h6>
-                                                    <a href="">Change Password</a>
+                                                    <a href="{%url "password_reset"%}">Change Password</a>
                                                 </div>
                                             </div>
     

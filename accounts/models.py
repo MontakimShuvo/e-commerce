@@ -17,4 +17,9 @@ class CustomUser(AbstractUser): # Add this class for custom user model
     mobile = models.CharField(max_length=15, blank=True, null=True)
 
     profile_picture = models.ImageField(upload_to='user_profile', blank=True, null=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    username = None
     
