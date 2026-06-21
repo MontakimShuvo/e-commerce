@@ -5,13 +5,25 @@ from accounts.forms import CustomUserRegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
+@login_required
 def user_dashboard(request):
     user = request.user
 
-    context = {
-        'user_info': user,
-    }
-    return render(request, 'accounts/user_dashboard.html',context)
+    if request.method == 'POST':
+        # Update user profile
+        user.email = request.POST.get('email',user.email)
+        user.mobile = request.POST.get('mobile', user.mobile)
+        user.address_line_1 = request.POST.get('address_line_1', user.address_line_1)
+        user.address_line_2 = request.POST.get('address_line_2', user.address_line_2)
+        user.city = request.POST.get('city', user.city)
+        user.state = request.POST.get('state', user.state)
+        user.country = request.POST.get('country', user.country)
+        user.save()
+        
+        return redirect('profile')
+    
+    context = { 'user_info': user }
+    return render(request, 'accounts/profile.html', context)
 
 def signup(request):
     if request.method == 'POST':
@@ -33,7 +45,7 @@ def user_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, 'You have Successfully logged in.')
-            return redirect('signup')
+            return redirect('profile')
         else:
             messages.error(request, 'Invalid email or password.')
     else:
