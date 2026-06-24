@@ -5,6 +5,11 @@ from accounts.forms import CustomUserRegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
+from accounts.utils import send_verification_email
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import  urlsafe_base64_decode
+from accounts.models import CustomUser
+
 @login_required
 def user_dashboard(request):
     user = request.user
@@ -27,13 +32,27 @@ def user_dashboard(request):
 
 def signup(request):
     if request.method == 'POST':
+        print("request.POST", request.POST)
         form = CustomUserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            # return redirect('user_dashboard')
+            auth_user = authenticate(
+                request,
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password1']
+            )
+            print("auth_user", auth_user)
+            if auth_user is not None:
+                login(request, auth_user)
+                messages.success(request, 'Account created successfully!')
+                return redirect('user_dashboard')
+            else:
+                print("Authentication failed for user:", user.email)
         else:
-            form = CustomUserRegistrationForm()
+            print("form.errors", form.errors)
+    else:
+        form = CustomUserRegistrationForm()
+    
     return render(request, 'accounts/sign-up.html')
 
 
@@ -51,10 +70,26 @@ def user_login(request):
     else:
         form = AuthenticationForm()
     
-    return render(request, 'accounts/login.html',{form: form})
+    return render(request, 'accounts/login.html',{ 'form': form })
 
 @login_required
 def user_logout(request):
     logout(request)
     messages.success(request, 'You have Successfully logged out.')
     return redirect('login')
+
+def verify_email(request, uidb64, token):
+    try:
+        pk = urlsafe_base64_decode(uidb64).decode()
+        user = CustomUser.objects.get(pk=pk)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_verified = True
+        user.save()
+        messages.success(request, 'Your email has been verified. You can now log in.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Invalid verification link.')
+        return redirect('signup')
