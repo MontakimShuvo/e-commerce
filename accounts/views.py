@@ -31,6 +31,7 @@ def user_dashboard(request):
     return render(request, 'accounts/profile.html', context)
 
 def signup(request):
+    form = CustomUserRegistrationForm()
     if request.method == 'POST':
         print("request.POST", request.POST)
         form = CustomUserRegistrationForm(request.POST)
@@ -50,10 +51,8 @@ def signup(request):
                 print("Authentication failed for user:", user.email)
         else:
             print("form.errors", form.errors)
-    else:
-        form = CustomUserRegistrationForm()
-    
-    return render(request, 'accounts/sign-up.html')
+
+    return render(request, 'accounts/sign-up.html', {'form': form})
 
 
 def user_login(request):

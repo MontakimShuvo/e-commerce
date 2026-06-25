@@ -29,7 +29,7 @@
 
     <!-- log in section start -->
     <section class="log-in-section section-b-space">
-        <div class="container-fluid-lg w-100">
+        <div class="container-fluid-lg w-10">
             <div class="row">
                 <div class="col-xxl-6 col-xl-5 col-lg-6 d-lg-block d-none ms-auto">
                     <div class="image-contain">
@@ -49,19 +49,22 @@
                                 {% csrf_token %}
                                 <div class="col-12">
                                     <div class="form-floating theme-form-floating">
-                                        <input type="text" class="form-control" name= "firstname" id="firstname" placeholder="First Name"/>
+                                        <input type="text" class="form-control" name= "first_name" id="firstname" placeholder="First Name"
+                                            value="{{ form.first_name.value|default:'' }}"/>
                                         <label for="firstname">First Name</label>
                                     </div>
                                 </div>
                                  <div class="col-12">
                                     <div class="form-floating theme-form-floating">
-                                        <input type="text" class="form-control" name= "lastname" id="lastname" placeholder="Last Name"/>
+                                        <input type="text" class="form-control" name= "last_name" id="lastname" placeholder="Last Name"
+                                            value="{{ form.last_name.value|default:'' }}"/>
                                         <label for="lastname">Last Name</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating theme-form-floating">
-                                        <input type="email" class="form-control" name="email" id="email" placeholder="Email Address"/>
+                                        <input type="email" class="form-control" name="email" id="email" placeholder="Email Address"
+                                            value="{{ form.email.value|default:'' }}"/>
                                         <label for="email">Email Address</label>
                                     </div>
                                 </div>
@@ -196,4 +199,37 @@
     <!-- Bg overlay Start -->
     <div class="bg-overlay"></div>
     <!-- Bg overlay End -->
+    {% if form.errors %}
+    <div class="modal fade theme-modal" id="signupErrorModal" tabindex="-1" aria-labelledby="signupErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signupErrorModalLabel">Please fix these errors</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="mb-0 ps-3">
+                        {% for err in form.non_field_errors %}
+                        <li>{{ err }}</li>
+                        {% endfor %}
+                        {% for field in form %}
+                            {% for err in field.errors %}
+                            <li>{{ err }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var signupErrorModal = document.getElementById("signupErrorModal");
+            if (signupErrorModal) {
+                var modal = new bootstrap.Modal(signupErrorModal);
+                modal.show();
+            }
+        });
+    </script>
+    {% endif %}
 {% endblock %}
