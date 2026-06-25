@@ -34,3 +34,30 @@ def send_verification_email(request, user):
         print("Error sending verification email:", e)
     
 
+def send_password_reset_email(request, user):
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    current_site = get_current_site(request)
+    verification_link = f"http://{current_site.domain}/accounts/reset-password-confirm/{uid}/{token}/"
+
+    email_subject = "Reset your password"
+    email_body = render_to_string("accounts/verification_email.html", {
+        'user': user,
+        'verification_link': verification_link,
+    })
+
+    email = EmailMessage(
+        subject=email_subject,
+        body=email_body,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[user.email],
+    )
+
+    email.content_subtype = "html"
+    try:
+        email.send()
+    except Exception as e:
+        print("verification email sent to", user.email)
+        print("Error sending verification email:", e)
+

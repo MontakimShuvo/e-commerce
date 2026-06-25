@@ -5,7 +5,7 @@ from accounts.forms import CustomUserRegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
-from accounts.utils import send_verification_email
+from accounts.utils import send_verification_email, send_password_reset_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import  urlsafe_base64_decode
 from accounts.models import CustomUser
@@ -42,6 +42,7 @@ def signup(request):
                 email=form.cleaned_data['email'],
                 password=form.cleaned_data['password1']
             )
+            send_verification_email(request, user)
             print("auth_user", auth_user)
             if auth_user is not None:
                 login(request, auth_user)
@@ -92,3 +93,44 @@ def verify_email(request, uidb64, token):
     else:
         messages.error(request, 'Invalid verification link.')
         return redirect('signup')
+    
+def reset_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'No user found with this email address.')
+            return redirect('password_reset')
+        
+        send_password_reset_email(request, user)
+        return redirect('login')
+    
+    return render(request, 'accounts/forgot.html')
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_verified = True
+        user.save()
+        login(request, user)
+        return redirect('new-password')
+    else:
+        messages.error(request, 'Invalid password reset link.')
+        return redirect('login')
+    
+@login_required    
+def set_new_password(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = request.user
+        user.set_password(password)
+        user.save()
+        messages.success(request, 'Your password has been reset successfully.')
+        return redirect('profile')
+    return render(request, 'accounts/newpassword.html')
