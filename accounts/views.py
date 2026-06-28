@@ -104,6 +104,9 @@ def reset_password(request):
             return redirect('password_reset')
         
         send_password_reset_email(request, user)
+        messages.info(
+            request, "We have sent you an email with password reset instructions"
+        )
         return redirect('login')
     
     return render(request, 'accounts/forgot.html')
