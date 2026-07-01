@@ -35,11 +35,29 @@ def category_products(request, category_slug):
 def product_detail(request, product_slug):
     product = get_object_or_404(Product, slug=product_slug)
 
+    rating_counts = {
+        '5': product.reviews.filter(rating=5).count(),
+        '4': product.reviews.filter(rating=4).count(),
+        '3': product.reviews.filter(rating=3).count(),
+        '2': product.reviews.filter(rating=2).count(),
+        '1': product.reviews.filter(rating=1).count(),
+    }
+
+    total_reviews = sum(rating_counts.values())
+
+    rating_percentages = {
+        '5': (rating_counts['5'] / total_reviews * 100 ) if total_reviews > 0 else 0,
+        '4': (rating_counts['4'] / total_reviews * 100 ) if total_reviews > 0 else 0,
+        '3': (rating_counts['3'] / total_reviews * 100 ) if total_reviews > 0 else 0,
+        '2': (rating_counts['2'] / total_reviews * 100 ) if total_reviews > 0 else 0,
+        '1': (rating_counts['1'] / total_reviews * 100 ) if total_reviews > 0 else 0,
+    }
+
     context = {
         "product": product,
-        "rating_counts": 0,
-        "rating_percentages": 0,
-        "reviews": 0,
+        "rating_counts": rating_counts,
+        "rating_percentages": rating_percentages,
+        "reviews": total_reviews,
     }
     return render(request, "products/product-left-thumbnail.html", context)
 
